@@ -2,7 +2,8 @@
 // Created by musmusliu on 2021/10/27.
 //
 
-#pragma once
+#ifndef HELLO_LUA_H_
+#define HELLO_LUA_H_
 
 #include "LuaLibrary.h"
 
@@ -17,8 +18,8 @@
 #define BEGIN_DECLARE_LUA_WRAPPER(ClassName, StaticMethodNum, StaticFieldNum, MethodNum, FieldNum)  \
 template<typename T>                                                                                \
 class ClassName##LuaWrapper                                                                            \
-{                                                                                                    \
-public:                                                                                            \
+{                                                                                                   \
+public:                                                                                            	\
        ClassName##LuaWrapper() = delete;                                                            \
        static void Register(lua_State* L)                                                            \
        {                                                                                            \
@@ -81,7 +82,7 @@ public:                                                                         
             lua_pushcfunction(L, CreateObject);                                                    \
             lua_rawset(L, classIdx);                                                                \
             lua_pushvalue(L, classIdx);                                                             \
-            lua_setglobal(L, GetClassName());                                                      \
+            lua_setglobal(L, #ClassName);                                                      		\
             CreateGlobalTable(L, GetClassMetaName(), 0, 2);                                        \
             lua_pushstring(L, "__index");                                                            \
             lua_pushcfunction(L, StaticIndexMethod);                                                \
@@ -91,72 +92,74 @@ public:                                                                         
             lua_rawset(L, -3);                                                                        \
             lua_setmetatable(L, classIdx);                                                            \
             int memberIdx = 0;                                                                      \
-            while(std::get<0>(Members[memberIdx]) != nullptr)                                       \
+			MemberType* members = GetMembers();                                                      \
+			MemberType member = *(members + memberIdx);												\
+            while(std::get<0>(member) != nullptr)                                    				\
             {                                                                                       \
-                if(std::get<3>(Members[memberIdx]) == LUA_WRAPPER_STATIC)                           \
+                if(std::get<3>(member) == LUA_WRAPPER_STATIC)                           			\
                 {                                                                                    \
-                    int tableType = std::get<2>(Members[memberIdx]);                                \
+                    int tableType = std::get<2>(member);                                			\
                     int tableIdx = tableType == LUA_WRAPPER_MEMBER_METHOD ? classMethodIdx :        \
                         (tableType == LUA_WRAPPER_MEMBER_GETTER ? classGetterIdx : classSetterIdx); \
                     if(tableIdx != 0)                                                               \
                     {                                                                               \
-                        lua_pushstring(L, std::get<0>(Members[memberIdx]));                            \
-                        lua_pushcfunction(L, std::get<1>(Members[memberIdx]));                         \
+                        lua_pushstring(L, std::get<0>(member));                            			\
+                        lua_pushcfunction(L, std::get<1>(member));                         			\
                         lua_rawset(L, tableIdx);                                                    \
                     }                                                                                \
                 }                                                                                   \
-                else if(std::get<3>(Members[memberIdx]) == LUA_WRAPPER_OBJECT)                      \
+                else if(std::get<3>(member) == LUA_WRAPPER_OBJECT)                      			\
                 {                                                                                   \
-                    int tableType = std::get<2>(Members[memberIdx]);                                \
+                    int tableType = std::get<2>(member);                                			\
                     int tableIdx = tableType == LUA_WRAPPER_MEMBER_METHOD ? methodIdx :             \
                         (tableType == LUA_WRAPPER_MEMBER_GETTER ? getterIdx : setterIdx);           \
                     if(tableIdx != 0)                                                               \
                     {                                                                               \
-                        lua_pushstring(L, std::get<0>(Members[memberIdx]));                            \
-                        lua_pushcfunction(L, std::get<1>(Members[memberIdx]));                         \
+                        lua_pushstring(L, std::get<0>(member));                            			\
+                        lua_pushcfunction(L, std::get<1>(member));                         			\
                         lua_rawset(L, tableIdx);                                                    \
                     }                                                                                \
                 }                                                                                    \
-                ++memberIdx;                                                                        \
+                member = *(members + (++memberIdx));	                                           	\
             }                                                                                       \
             lua_pop(L, pop);                                                                        \
        }                                                                                            \
 private:                                                                                            \
     static const char* GetClassName()                                                            \
     {                                                                                            \
-        return #ClassName;                                                                        \
+        return "class "#ClassName;                                                                 \
     }                                                                                            \
     static const char* GetClassMetaName()                                                        \
     {                                                                                            \
-        return #ClassName"_StaticMeta";                                                            \
+        return "class "#ClassName"_StaticMeta";                                                            \
     }                                                                                            \
     static const char* GetClassMethodName()                                                        \
     {                                                                                            \
-        return #ClassName"_StaticMethod";                                                        \
+        return "class "#ClassName"_StaticMethod";                                                        \
     }                                                                                            \
     static const char* GetClassGetterName()                                                        \
     {                                                                                            \
-        return #ClassName"_StaticGetter";                                                        \
+        return "class "#ClassName"_StaticGetter";                                                        \
     }                                                                                            \
     static const char* GetClassSetterName()                                                        \
     {                                                                                            \
-        return #ClassName"_StaticSetter";                                                        \
+        return "class "#ClassName"_StaticSetter";                                                        \
     }                                                                                            \
     static const char* GetObjectMetaName()                                                        \
     {                                                                                            \
-        return #ClassName"_Setter";                                                                \
+        return "class "#ClassName"_Meta";                                                                \
     }                                                                                            \
     static const char* GetObjectMethodName()                                                        \
     {                                                                                            \
-        return #ClassName"_Method";                                                                \
+        return "class "#ClassName"_Method";                                                                \
     }                                                                                            \
     static const char* GetObjectGetterName()                                                        \
     {                                                                                            \
-        return #ClassName"_Getter";                                                                \
+        return "class "#ClassName"_Getter";                                                                \
     }                                                                                            \
     static const char* GetObjectSetterName()                                                        \
     {                                                                                            \
-        return #ClassName"_Setter";                                                                \
+        return "class "#ClassName"_Setter";                                                                \
     }
 
 #define END_DECLARE_LUA_WRAPPER()                                                    \
@@ -205,7 +208,7 @@ private:                                                                        
     }                                                                                \
     static int IndexMethod(lua_State* L)                                            \
     {                                                                                \
-        const char* memberName = ToNative<const char*>(L, 2);                        \
+		const char* memberName = ToNative<const char*>(L, 2);                        \
         if(lua_getfield(L, LUA_REGISTRYINDEX, GetObjectMethodName()) != LUA_TNIL)    \
         {                                                                            \
             if(lua_getfield(L, -1, memberName) != LUA_TNIL)                            \
@@ -275,7 +278,7 @@ private:                                                                        
     static int DestroyObject(lua_State* L)    \
     {                                            \
         T** pointer = (T**)lua_touserdata(L,1); \
-        Destructor(*pointer)                    \
+        Destructor(*pointer);                    \
         return 1;                                \
     }                                            \
 
@@ -287,12 +290,16 @@ private:                                                                        
         return 1;                                \
     }                                            \
 
-#define BEGIN_DECLARE_MEMBER()                                                                \
-    constexpr static std::tuple<const char*, int (*)(lua_State*), int, int> Members[] = {
+#define BEGIN_DECLARE_MEMBER() \
+	using MemberType = std::tuple<const char*, int (*)(lua_State*), int, int>; 	\
+	static MemberType* GetMembers() {											\
+		static MemberType tmembers[] = {											\
 
-#define END_DECLARE_MEMBER()        \
-        {nullptr, nullptr, 0, 0}    \
-    };                              \
+#define END_DECLARE_MEMBER()        	\
+			{nullptr, nullptr, 0, 0}    \
+		};                              \
+		return tmembers;					\
+	}									\
 
 #define DECLARE_STATIC_METHOD_AS(MethodName, Method, RetType, ...)        \
         {MethodName, [](lua_State* L){                                    \
@@ -329,9 +336,9 @@ private:                                                                        
 #define DECLARE_METHOD_AS(MethodName, Method, RetType, ...)                                \
         {MethodName, [](lua_State* L){                                                    \
             int ret = 0;                                                                \
-            try{                                                                        \
+            try{                                                                           \
                 ret = HelpCallObjectFunction<T, RetType, __VA_ARGS__>(L, &T::Method);    \
-            }catch(LuaException& e){                                                    \
+            }catch(LuaException& e){                                                       \
                 luaL_error(L, e.what());                                                 \
             }                                                                            \
             return ret;},                                                             \
@@ -341,24 +348,26 @@ private:                                                                        
     DECLARE_METHOD_AS(#Method, Method, RetType, __VA_ARGS__)
 
 #define DECLARE_FIELD_AS(FieldName, Field)                \
-        {FieldName, [](lua_State* L) {                \
+        {FieldName, [](lua_State* L) {                    \
             T** userData = (T**)lua_touserdata(L, 1);     \
-			try{                                             \
-                (*userData)->Field= ToNative<(L, 2); 	\
+			try{                                           \
+				using Type = decltype(T::Field);		\
+                (*userData)->Field= ToNative<Type>(L, 2); 	\
             }catch(LuaException& e){                     \
                 luaL_error(L, e.what());                  \
             }                                             \
             return 0; },                               \
         LUA_WRAPPER_MEMBER_SETTER, LUA_WRAPPER_OBJECT},    \
-        {FieldName, [](lua_State* L) {                  \
-            T** userData = (T**)lua_touserdata(L, 1);   \
-            PushNative((*userData)->Field);                \
+        {FieldName, [](lua_State* L) {                    \
+			T** userData = (T**)lua_touserdata(L, 1);     \
+            PushNative(L,(*userData)->Field);   		\
             return 1; },                                \
         LUA_WRAPPER_MEMBER_GETTER, LUA_WRAPPER_OBJECT},    \
 
 #define DECLARE_FIELD(Field)        \
     DECLARE_FIELD_AS(#Field, Field)
 
+#endif
 
 
 

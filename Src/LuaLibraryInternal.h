@@ -2,13 +2,16 @@
 // Created by musmusliu on 2021/11/10.
 //
 
-#pragma once
+#ifndef LUA_LIBRARY_INTERNAL_H_
+#define LUA_LIBRARY_INTERNAL_H_
 
 #include <tuple>
 #include <functional>
 #include <type_traits>
 #include <string>
 #include <stdexcept>
+
+#define MAX_OBJECT_META_NAME_LEN 125
 
 class LuaException : public std::runtime_error
 {
@@ -26,87 +29,186 @@ void PushNativesInternal(lua_State* L,
 }
 
 template<typename T>
-void PushNativeInternal(lua_State* L,
-		const T& any) noexcept
+void PushObject(lua_State* L,
+		T* obj)
 {
-	if constexpr (std::is_same<T, bool>::value)
-		lua_pushboolean(L, (bool)any);
-	else if constexpr (std::is_integral<T>::value)
-		lua_pushinteger(L, (lua_Integer)any);
-	else if constexpr (std::is_same<T, std::string>::value)
-		lua_pushstring(L, any.c_str());
-	else if constexpr (std::is_floating_point<T>::value)
-		lua_pushnumber(L, (lua_Number)any);
-	else if constexpr (std::is_pointer<T>::value)
-	{
-		using Type = std::remove_cv<std::remove_pointer<T>::type>::type;
-		if (std::is_same<Type, char>::value)
-		{
-			if (any != nullptr)
-				lua_pushstring(L, (const char*)any);
-			else
-				lua_pushnil(L);
-		}
-	}
-	else if constexpr (std::is_function<T>::value)
-		lua_pushcfunction(L, any);
-	else
-	{
-		lua_pushnil(L);
-	}
+	static_assert(std::is_pointer<T>::value, "T is not pointer type");
+
+	if(obj == nullptr)
+		throw LuaException("obj is null");
+
+	using Type = std::remove_pointer<T>::type;
+	char metaName[MAX_OBJECT_META_NAME_LEN];
+	int len = snprintf(metaName, MAX_OBJECT_META_NAME_LEN, "%s_Meta", typeid(Type).name());
+	if ( len < 0 || len > MAX_OBJECT_META_NAME_LEN )
+		throw LuaException("get meta name exception");
+
+	lua_pushlightuserdata(L, obj);
+	if(lua_getfield(L, LUA_REGISTRYINDEX, metaName) == LUA_TNIL)
+		throw LuaException("can't get metatable");
+	lua_setmetatable(L, -2);
 }
+
+//template<typename T>
+//void PushNativeInternal(lua_State* L,
+//		T any) noexcept
+//{
+//	if constexpr (std::is_same<T, bool>::value)
+//		lua_pushboolean(L, (bool)any);
+//	else if constexpr (std::is_integral<T>::value)
+//		lua_pushinteger(L, (lua_Integer)any);
+//	else if constexpr (std::is_same<T, std::string>::value)
+//		lua_pushstring(L, any.c_str());
+//	else if constexpr (std::is_floating_point<T>::value)
+//		lua_pushnumber(L, (lua_Number)any);
+//	else if constexpr (std::is_pointer<T>::value)
+//	{
+//		using Type = std::remove_cv<std::remove_pointer<T>::type>::type;
+//		if (std::is_same<Type, char>::value)
+//		{
+//			if (any != nullptr)
+//				lua_pushstring(L, (const char*)any);
+//			else
+//				lua_pushnil(L);
+//		}
+//		else
+//			PushObject(L, any);
+//	}
+//	else if constexpr (std::is_function<T>::value)
+//		lua_pushcfunction(L, any);
+//	else
+//		throw LuaException(std::string("unsupported type ").append(typeid(any).name()));
+//}
+
+template<typename T>
+void PushNativeInternal(lua_State* L,
+		T any) noexcept
+{
+	static_assert(std::is_pointer<T>::value, "T is not a pointer type");
+	PushObject<T>(L, &any);
+}
+
+template<>
+void PushNativeInternal(lua_State* L,
+		bool any) noexcept;
+
+template<>
+void PushNativeInternal(lua_State* L,
+		int any) noexcept;
+
+template<>
+void PushNativeInternal(lua_State* L,
+		std::string& any) noexcept;
+
+template<>
+void PushNativeInternal(lua_State* L,
+		double any) noexcept;
+
+template<>
+void PushNativeInternal(lua_State* L,
+		float any) noexcept;
+
+template<>
+void PushNativeInternal(lua_State* L,
+		const char* any) noexcept;
+
+template<>
+void PushNativeInternal(lua_State* L,
+		lua_CFunction any) noexcept;
+
+//不使用c++17的if constexpr，改用模板特化
+//template<typename T>
+//T ToNativeInternal(lua_State* L,
+//		int idx)
+//{
+//	if constexpr (std::is_same<T, bool>::value)
+//	{
+//		if(lua_type(L, idx) != LUA_TBOOLEAN)
+//			throw LuaException("can't cast to boolean");
+//		return lua_toboolean(L, idx);
+//	}
+//	else if constexpr (std::is_integral<T>::value)
+//	{
+//		if(lua_type(L, idx) != LUA_TNUMBER)
+//			throw LuaException("can't cast to integer");
+//		return lua_tointeger(L, idx);
+//	}
+//	else if constexpr (std::is_same<T, std::string>::value)
+//	{
+//		if(lua_type(L, idx) != LUA_TSTRING)
+//			throw LuaException("can't cast to std::string");
+//		return std::string(lua_tostring(L, idx));
+//	}
+//	else if constexpr (std::is_floating_point<T>::value)
+//	{
+//		if(lua_type(L, idx) != LUA_TNUMBER)
+//			throw LuaException("can't cast to float point");
+//		return lua_tonumber(L, idx);
+//	}
+//	else if constexpr (std::is_pointer<T>::value)
+//	{
+//		using Type = std::remove_volatile<std::remove_pointer<T>::type>::type;
+//		if constexpr (std::is_same<Type, const char>::value)
+//		{
+//			if(lua_type(L, idx) != LUA_TSTRING)
+//				throw LuaException("can't cast to const char*");
+//			return lua_tostring(L, idx);
+//		}
+//		else if constexpr (std::is_same<T, lua_CFunction>::value)
+//		{
+//			if(lua_type(L, idx) != LUA_TFUNCTION)
+//				throw LuaException("can't cast to lua_CFunction");
+//			return lua_tocfunction(L, idx);
+//		}
+//		else
+//		{
+//			int type = lua_type(L, idx);
+//			if(type != LUA_TUSERDATA && type != LUA_TLIGHTUSERDATA)
+//				throw LuaException("can't cast to userdata");
+//			return (T)lua_touserdata(L, idx);
+//		}
+//	}
+//}
 
 template<typename T>
 T ToNativeInternal(lua_State* L,
 		int idx)
 {
-	if constexpr (std::is_same<T, bool>::value)
-	{
-		if(lua_type(L, idx) != LUA_TBOOLEAN)
-			throw LuaException("can't cast to boolean");
-		return lua_toboolean(L, idx);
-	}
-	else if constexpr (std::is_integral<T>::value)
-	{
-		if(lua_type(L, idx) != LUA_TNUMBER)
-			throw LuaException("can't cast to integer");
-		return lua_tointeger(L, idx);
-	}
-	else if constexpr (std::is_same<T, std::string>::value)
-	{
-		if(lua_type(L, idx) != LUA_TSTRING)
-			throw LuaException("can't cast to std::string");
-		return std::string(lua_tostring(L, idx));
-	}
-	else if constexpr (std::is_floating_point<T>::value)
-	{
-		if(lua_type(L, idx) != LUA_TNUMBER)
-			throw LuaException("can't cast to float point");
-		return lua_tonumber(L, idx);
-	}
-	else if constexpr (std::is_pointer<T>::value)
-	{
-		using Type = std::remove_volatile<std::remove_pointer<T>::type>::type;
-		if constexpr (std::is_same<Type, const char>::value)
-		{
-			if(lua_type(L, idx) != LUA_TSTRING)
-				throw LuaException("can't cast to const char*");
-			return lua_tostring(L, idx);
-		}
-		else if constexpr (std::is_same<T, lua_CFunction>::value)
-		{
-			if(lua_type(L, idx) != LUA_TFUNCTION)
-				throw LuaException("can't cast to lua_CFunction");
-			return lua_tocfunction(L, idx);
-		}
-		else
-		{
-			if(lua_type(L, idx) != LUA_TUSERDATA)
-				throw LuaException("can't cast to userdata");
-			return (T)lua_touserdata(L, idx);
-		}
-	}
+	static_assert(std::is_pointer<T>::value, "T is not pointer type");
+
+	int type = lua_type(L, idx);
+	if(type != LUA_TUSERDATA && type != LUA_TLIGHTUSERDATA)
+		throw LuaException("can't cast to userdata");
+	return (T)lua_touserdata(L, idx);
 }
+
+template<>
+bool ToNativeInternal(lua_State* L,
+		int idx);
+
+template<>
+int ToNativeInternal(lua_State* L,
+		int idx);
+
+template<>
+std::string ToNativeInternal(lua_State* L,
+		int idx);
+
+template<>
+double ToNativeInternal(lua_State* L,
+		int idx);
+
+template<>
+float ToNativeInternal(lua_State* L,
+		int idx);
+
+template<>
+const char* ToNativeInternal(lua_State* L,
+		int idx);
+
+template<>
+lua_CFunction ToNativeInternal(lua_State* L,
+		int idx);
 
 template<typename... Args, size_t... Integers>
 void ToNativesInternal(lua_State* L,
@@ -144,3 +246,10 @@ RetType HelpCallFunctionInternal(
 {
 	return function(std::get<Integers>(tuple)...);
 }
+
+bool CallLuaFunctionInternal(lua_State* L,
+		int argCount,
+		int retCount,
+		std::string& error);
+
+#endif

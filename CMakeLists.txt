@@ -4,7 +4,50 @@
 
 # project
 cmake_minimum_required(VERSION 3.13.0)
-project(HelloLuaTest LANGUAGES C CXX ASM)
+project(HelloLua LANGUAGES C CXX ASM)
+
+# target
+add_library(HelloLua STATIC "")
+set_target_properties(HelloLua PROPERTIES OUTPUT_NAME "HelloLua")
+set_target_properties(HelloLua PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "build/windows/x64/release")
+target_include_directories(HelloLua PRIVATE
+    Src
+)
+target_include_directories(HelloLua INTERFACE
+    Src
+)
+target_include_directories(HelloLua PRIVATE
+    C:/Users/musmusliu/AppData/Local/.xmake/packages/l/lua/v5.4.3/286feda19b6349b5ac4963a7b64ba7a8/include
+)
+set_property(TARGET HelloLua PROPERTY C_STANDARD 99)
+if(MSVC)
+    target_compile_options(HelloLua PRIVATE $<$<COMPILE_LANGUAGE:C>:-TP>)
+endif()
+set_property(TARGET HelloLua PROPERTY CXX_STANDARD 14)
+target_compile_options(HelloLua PRIVATE
+    $<$<COMPILE_LANGUAGE:C>:-DNDEBUG>
+    $<$<COMPILE_LANGUAGE:CXX>:-DNDEBUG>
+)
+target_compile_features(HelloLua PRIVATE c_std_99)
+target_compile_features(HelloLua PRIVATE cxx_std_14)
+if(MSVC)
+    target_compile_options(HelloLua PRIVATE $<$<CONFIG:Release>:-Ox -fp:fast>)
+else()
+    target_compile_options(HelloLua PRIVATE -O3)
+endif()
+target_link_libraries(HelloLua PRIVATE
+    lua
+)
+target_link_directories(HelloLua PRIVATE
+    C:/Users/musmusliu/AppData/Local/.xmake/packages/l/lua/v5.4.3/286feda19b6349b5ac4963a7b64ba7a8/lib
+)
+target_sources(HelloLua PRIVATE
+    Src/HelloLua.cpp
+    Src/LuaLibrary.cpp
+    Src/HelloLua.h
+    Src/LuaLibrary.h
+    Src/LuaLibraryInternal.h
+)
 
 # target
 add_executable(HelloLuaTest "")
@@ -21,13 +64,13 @@ set_property(TARGET HelloLuaTest PROPERTY C_STANDARD 99)
 if(MSVC)
     target_compile_options(HelloLuaTest PRIVATE $<$<COMPILE_LANGUAGE:C>:-TP>)
 endif()
-set_property(TARGET HelloLuaTest PROPERTY CXX_STANDARD 17)
+set_property(TARGET HelloLuaTest PROPERTY CXX_STANDARD 14)
 target_compile_options(HelloLuaTest PRIVATE
     $<$<COMPILE_LANGUAGE:C>:-DNDEBUG>
     $<$<COMPILE_LANGUAGE:CXX>:-DNDEBUG>
 )
 target_compile_features(HelloLuaTest PRIVATE c_std_99)
-target_compile_features(HelloLuaTest PRIVATE cxx_std_17)
+target_compile_features(HelloLuaTest PRIVATE cxx_std_14)
 if(MSVC)
     target_compile_options(HelloLuaTest PRIVATE $<$<CONFIG:Release>:-Ox -fp:fast>)
 else()
@@ -46,46 +89,5 @@ target_link_options(HelloLuaTest PRIVATE
 )
 target_sources(HelloLuaTest PRIVATE
     Test/Main.cpp
-)
-
-# target
-add_library(HelloLua STATIC "" Src/LuaLibrary.cpp Src/LuaLibraryInternal.h)
-set_target_properties(HelloLua PROPERTIES OUTPUT_NAME "HelloLua")
-set_target_properties(HelloLua PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "build/windows/x64/release")
-target_include_directories(HelloLua PRIVATE
-    Src
-)
-target_include_directories(HelloLua INTERFACE
-    Src
-)
-target_include_directories(HelloLua PRIVATE
-    C:/Users/musmusliu/AppData/Local/.xmake/packages/l/lua/v5.4.3/286feda19b6349b5ac4963a7b64ba7a8/include
-)
-set_property(TARGET HelloLua PROPERTY C_STANDARD 99)
-if(MSVC)
-    target_compile_options(HelloLua PRIVATE $<$<COMPILE_LANGUAGE:C>:-TP>)
-endif()
-set_property(TARGET HelloLua PROPERTY CXX_STANDARD 17)
-target_compile_options(HelloLua PRIVATE
-    $<$<COMPILE_LANGUAGE:C>:-DNDEBUG>
-    $<$<COMPILE_LANGUAGE:CXX>:-DNDEBUG>
-)
-target_compile_features(HelloLua PRIVATE c_std_99)
-target_compile_features(HelloLua PRIVATE cxx_std_17)
-if(MSVC)
-    target_compile_options(HelloLua PRIVATE $<$<CONFIG:Release>:-Ox -fp:fast>)
-else()
-    target_compile_options(HelloLua PRIVATE -O3)
-endif()
-target_link_libraries(HelloLua PRIVATE
-    lua
-)
-target_link_directories(HelloLua PRIVATE
-    C:/Users/musmusliu/AppData/Local/.xmake/packages/l/lua/v5.4.3/286feda19b6349b5ac4963a7b64ba7a8/lib
-)
-target_sources(HelloLua PRIVATE
-    Src/HelloLua.cpp
-    Src/HelloLua.h
-    Src/LuaLibrary.h
 )
 

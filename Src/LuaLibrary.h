@@ -2,8 +2,10 @@
 // Created by musmusliu on 2021/10/28.
 //
 
-#pragma once
+#ifndef LUA_LIBRARY_H_
+#define LUA_LIBRARY_H_
 
+#include <iostream>
 #include "lua.hpp"
 #include "LuaLibraryInternal.h"
 
@@ -20,7 +22,6 @@ int CreateGlobalTable(lua_State* L,
 		int narr,
 		int nrec) noexcept;
 
-
 /**
  * 压入Lua支持的任何值
  * @tparam T
@@ -29,7 +30,7 @@ int CreateGlobalTable(lua_State* L,
  */
 template<typename T>
 void PushNative(lua_State* L,
-		const T& any) noexcept
+		T any) noexcept
 {
 	PushNativeInternal(L, any);
 }
@@ -142,9 +143,9 @@ void ToNatives(lua_State* L,
  * @return
  */
 template<typename T, typename... Args>
-int CreateUserData(lua_State* L)
+void CreateUserData(lua_State* L)
 {
-	if(lua_gettop(L) < sizeof...(Args))
+	if (lua_gettop(L) < sizeof...(Args))
 		throw LuaException("no enough params in lua stack");
 
 	std::tuple<Args...> tuple;
@@ -152,8 +153,6 @@ int CreateUserData(lua_State* L)
 
 	T** pointer = (T**)lua_newuserdata(L, sizeof(T**));
 	*pointer = CreateUserDataInternal<T>(L, tuple, std::make_index_sequence<sizeof...(Args)>{});
-
-	return 1;
 }
 
 /**
@@ -163,11 +162,10 @@ int CreateUserData(lua_State* L)
  * @return
  */
 template<typename T>
-int CreateUserDataNoParam(lua_State* L) noexcept
+void CreateUserDataNoParam(lua_State* L) noexcept
 {
 	T** pointer = (T**)lua_newuserdata(L, sizeof(T**));
 	*pointer = new T;
-	return 1;
 }
 
 /**
@@ -183,7 +181,7 @@ template<typename T, typename RetType, typename... ArgTypes>
 int HelpCallObjectFunction(lua_State* L,
 		RetType(T::*func)(ArgTypes...))
 {
-	if(lua_gettop(L) < sizeof...(ArgTypes) + 1)
+	if (lua_gettop(L) < sizeof...(ArgTypes) + 1)
 		throw LuaException("no enough params to call function");
 
 	T** userData = ToNative<T**>(L, 1);
@@ -213,7 +211,7 @@ template<typename RetType, typename... ArgTypes>
 int HelpCallFunction(lua_State* L,
 		std::function<RetType(ArgTypes...)> function)
 {
-	if(lua_gettop(L) < sizeof...(ArgTypes))
+	if (lua_gettop(L) < sizeof...(ArgTypes))
 		throw LuaException("no enough params to call function");
 
 	std::tuple<ArgTypes...> tuple;
@@ -229,4 +227,156 @@ int HelpCallFunction(lua_State* L,
 	return 0;
 }
 
+/**
+ * 调用lua方法,有参数有返回值
+ * @tparam ArgTypes
+ * @tparam RetTypes
+ * @param L
+ * @param error
+ * @param args
+ * @param rets
+ * @return
+ */
+template<typename ...ArgTypes, typename ...RetTypes>
+bool CallLuaFunction(lua_State* L,
+		std::string& error,
+		std::tuple<RetTypes...>& rets,
+		ArgTypes...args)
+{
+	int top = lua_gettop(L);
 
+	std::tuple<ArgTypes...> argsTuple{ args... };
+	PushNatives(L, argsTuple);
+	if (!CallLuaFunctionInternal(L, sizeof...(ArgTypes), sizeof...(RetTypes), error))
+		return false;
+
+	ToNatives(L, rets, top);
+	lua_pop(L, (int)sizeof...(RetTypes));
+
+	return true;
+}
+
+/**
+ * 调用lua方法, 有参数无返回值
+ * @tparam ArgTypes
+ * @param L
+ * @param error
+ * @param args
+ * @return
+ */
+template<typename ...ArgTypes>
+bool CallLuaFunction(lua_State* L,
+		std::string& error,
+		ArgTypes...args)
+{
+	std::tuple<ArgTypes...> argsTuple{ args... };
+	PushNatives(L, argsTuple);
+	return CallLuaFunctionInternal(L, sizeof...(ArgTypes), 0, error);
+}
+
+/**
+ * 调用lua方法, 无参数有返回值
+ * @tparam RetTypes
+ * @param L
+ * @param error
+ * @param rets
+ * @return
+ */
+template<typename ...RetTypes>
+bool CallLuaFunction(lua_State* L,
+		std::string& error,
+		std::tuple<RetTypes...>& rets)
+{
+	int top = lua_gettop(L);
+
+	if (!CallLuaFunctionInternal(L, 0, sizeof...(RetTypes), error))
+		return false;
+
+	ToNatives(L, rets, top);
+	lua_pop(L, sizeof...(RetTypes));
+
+	return true;
+}
+
+/**
+ * 调用lua方法, 无参数无返回值
+ * @param L
+ * @param error
+ * @return
+ */
+bool CallLuaFunction(lua_State* L,
+		std::string& error);
+
+/**
+ * 调用lua全局方法, 有参数有返回值
+ * @tparam ArgTypes
+ * @tparam RetTypes
+ * @param L
+ * @param functionName
+ * @param error
+ * @param args
+ * @param rets
+ * @return
+ */
+template<typename ...ArgTypes, typename ...RetTypes>
+bool CallLuaGlobalFunction(lua_State* L,
+		const char* functionName,
+		std::string& error,
+		std::tuple<RetTypes...>& rets,
+		ArgTypes...args)
+{
+	lua_getglobal(L, functionName);
+
+	return CallLuaFunction(L, error, rets, args...);
+}
+
+/**
+ * 调用lua全局方法, 有参数无返回值
+ * @tparam ArgTypes
+ * @param L
+ * @param functionName
+ * @param error
+ * @param args
+ * @return
+ */
+template<typename ...ArgTypes>
+bool CallLuaGlobalFunction(lua_State* L,
+		const char* functionName,
+		std::string& error,
+		ArgTypes...args)
+{
+	lua_getglobal(L, functionName);
+	return CallLuaFunction(L, error, args...);
+}
+
+/**
+ * 调用lua全局方法, 无参数有返回值
+ * @tparam RetTypes
+ * @param L
+ * @param functionName
+ * @param error
+ * @param rets
+ * @return
+ */
+template<typename ...RetTypes>
+bool CallLuaGlobalFunction(lua_State* L,
+		const char* functionName,
+		std::string& error,
+		std::tuple<RetTypes...>& rets)
+{
+	lua_getglobal(L, functionName);
+	return CallLuaFunction(L, error, rets);
+}
+
+/**
+ * 调用lua全局方法, 无参数无返回值
+ * @param L
+ * @param functionName
+ * @param error
+ * @return
+ */
+bool CallLuaGlobalFunction(lua_State* L,
+		const char* functionName,
+		std::string& error);
+
+#endif

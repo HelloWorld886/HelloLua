@@ -3,12 +3,26 @@
 --- Created by musmusliu.
 --- DateTime: 2021/10/25 21:47
 ---
+
+option("test")
+    set_default(true)
+    set_showmenu("true")
+    set_description("Tbuild test")
+option_end()
+
+option("lua")
+    set_default("v5.4.3")
+    set_showmenu("true")
+    set_description("lua version")
+option_end()
+
 add_rules("mode.debug", "mode.release")
 add_repositories("musmus-repo https://gitee.com/musmus9405/xmake-repo.git")
-add_requires("lua v5.4.3", {configs = {shared = false}})
+luaVersion = get_config("lua") and get_config("lua") or "v5.4.3"
+add_requires("lua " .. luaVersion, {configs = {shared = false}})
 
 target("HelloLua")
-    set_languages("c99", "cxx17")
+    set_languages("c99", "cxx14")
     set_kind("static")
     add_packages("lua", { public = true })
     add_includedirs("Src", { public = true })
@@ -16,7 +30,12 @@ target("HelloLua")
     add_headerfiles("Src/*.h")
 
 target("HelloLuaTest")
-    set_languages("c99", "cxx17")
+    if get_config("test") then
+        set_enabled(true)
+    else
+        set_enabled(false)
+    end
+    set_languages("c99", "cxx14")
     set_default(true)
     add_deps("HelloLua")
     set_kind("binary")

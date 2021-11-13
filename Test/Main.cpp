@@ -8,7 +8,9 @@
 class Test
 {
 public:
-	Test(int a,bool s) : _field(a){};
+	Test(int a, bool s) : _field(a)
+	{
+	};
 
 	static int SField;
 
@@ -23,23 +25,33 @@ public:
 		std::cout << "Static Method:" << msg << tips << std::endl;
 		return 0;
 	}
-private:
+
+public:
 	int _field;
 };
 
 int Test::SField = 1;
 
+void Destroy(Test* test)
+{
+	std::cout << "Destrpy" << std::endl;
+
+	delete test;
+}
+
 BEGIN_DECLARE_LUA_WRAPPER(Test, 1, 1, 1, 1)
 DECLARE_CONSTRUCTOR(int, bool)
-DECLARE_DEFAULT_DESTRUCTOR()
+DECLARE_DESTRUCTOR(Destroy)
 BEGIN_DECLARE_MEMBER()
 DECLARE_STATIC_METHOD(SPrint, int, const char*, const char*)
 DECLARE_STATIC_FIELD(SField)
 DECLARE_METHOD(Print, int, const char*)
+DECLARE_FIELD(_field)
 END_DECLARE_MEMBER()
 END_DECLARE_LUA_WRAPPER()
 
 static int index = 0;
+
 int RealPair(lua_State* L)
 {
 	int parameterCount = lua_gettop(L);
@@ -72,15 +84,7 @@ int main(int argc, char** argv)
 	lua_State* L = luaL_newstate();
 	luaL_openlibs(L);
 
-	REGISTER_CLASS(Test,L);
-
-//	lua_createtable(L,0 ,0);
-//	lua_createtable(L, 0,0);
-//	lua_pushstring(L, "__pairs");
-//	lua_pushcfunction(L, Pair);
-//	lua_rawset(L, -3);
-//	lua_setmetatable(L, -2);
-//	lua_setglobal(L, "T");
+	REGISTER_CLASS(Test, L);
 
 	int ret = luaL_dofile(L, "Lua/Main.lua");
 	if (ret != 0)
@@ -88,6 +92,28 @@ int main(int argc, char** argv)
 		std::cout << lua_tostring(L, -1);
 	}
 
+	lua_pushstring(L, "ss");
+
+//	test->Print("");
+//	std::tuple<int,const char*> rets;
+//	std::string error;
+//	try
+//	{
+//		if (!CallLuaGlobalFunction(L, "Main", error,rets, test))
+//		{
+//			std::cout << error;
+//		}
+//		else
+//		{
+//			std::cout << std::get<0>(rets);
+//			std::cout << std::get<1>(rets);
+//		}
+//	}
+//	catch (LuaException& e){
+//		std::cout << e.what();
+//	}
+
+	delete test;
 	lua_close(L);
 
 	return 0;

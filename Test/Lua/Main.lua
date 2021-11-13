@@ -9,3 +9,8 @@ Test.SField = 2
 print(Test.SField)
 local test = Test.New(2, false)
 test:Print("")
+
+function Main(test)
+    test:Print("")
+    return 20, "ss"
+end
