@@ -155,16 +155,16 @@ bool CallLuaFunctionInternal(lua_State* L,
 	return true;
 }
 
-bool CallLuaFunction(lua_State* L,
+bool CallLuaFunctionNoParamNoRet(lua_State* L,
 		std::string& error) noexcept
 {
 	return CallLuaFunctionInternal(L, 0, 0, error);
 }
 
-bool CallLuaGlobalFunction(lua_State* L,
+bool CallLuaGlobalFunctionNoParamNoRet(lua_State* L,
 		const char* functionName,
 		std::string& error) noexcept
 {
 	lua_getglobal(L, functionName);
-	return CallLuaFunction(L, error);
+	return CallLuaFunctionNoParamNoRet(L, error);
 }

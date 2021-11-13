@@ -87,6 +87,16 @@ int Pair(lua_State* L)
 	return 3;
 }
 
+int Index (lua_State* L)
+{
+	auto method = [](lua_State* L){
+		Test** test = (Test**)lua_touserdata(L, 1);
+		return (*test)->_field;
+	};
+
+	return method(L);
+}
+
 int main(int argc, char** argv)
 {
 	lua_State* L = luaL_newstate();
@@ -103,23 +113,11 @@ int main(int argc, char** argv)
 	lua_pushstring(L, "ss");
 
 	Test* test = new Test(10, false);
-	test->Print("");
-	std::tuple<int,const char*> rets;
+
 	std::string error;
-	try
+	if (!CallLuaGlobalFunctionParamNoRet(L, "Main", error, &test))
 	{
-		if (!CallLuaGlobalFunction(L, "Main", error,rets, test))
-		{
-			std::cout << error;
-		}
-		else
-		{
-			std::cout << std::get<0>(rets);
-			std::cout << std::get<1>(rets);
-		}
-	}
-	catch (LuaException& e){
-		std::cout << e.what();
+		std::cout << error;
 	}
 
 	delete test;

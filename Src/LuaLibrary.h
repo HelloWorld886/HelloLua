@@ -5,7 +5,6 @@
 #ifndef LUA_LIBRARY_H_
 #define LUA_LIBRARY_H_
 
-#include <iostream>
 #include "lua.hpp"
 #include "LuaLibraryInternal.h"
 
@@ -238,7 +237,7 @@ int HelpCallFunction(lua_State* L,
  * @return
  */
 template<typename ...ArgTypes, typename ...RetTypes>
-bool CallLuaFunction(lua_State* L,
+bool CallLuaFunctionParamRet(lua_State* L,
 		std::string& error,
 		std::tuple<RetTypes...>& rets,
 		ArgTypes...args) noexcept
@@ -265,7 +264,7 @@ bool CallLuaFunction(lua_State* L,
  * @return
  */
 template<typename ...ArgTypes>
-bool CallLuaFunction(lua_State* L,
+bool CallLuaFunctionParamNoRet(lua_State* L,
 		std::string& error,
 		ArgTypes...args) noexcept
 {
@@ -283,7 +282,7 @@ bool CallLuaFunction(lua_State* L,
  * @return
  */
 template<typename ...RetTypes>
-bool CallLuaFunction(lua_State* L,
+bool CallLuaFunctionNoParamRet(lua_State* L,
 		std::string& error,
 		std::tuple<RetTypes...>& rets) noexcept
 {
@@ -304,7 +303,7 @@ bool CallLuaFunction(lua_State* L,
  * @param error
  * @return
  */
-bool CallLuaFunction(lua_State* L,
+bool CallLuaFunctionNoParamNoRet(lua_State* L,
 		std::string& error) noexcept;
 
 /**
@@ -319,7 +318,7 @@ bool CallLuaFunction(lua_State* L,
  * @return
  */
 template<typename ...ArgTypes, typename ...RetTypes>
-bool CallLuaGlobalFunction(lua_State* L,
+bool CallLuaGlobalFunctionParamRet(lua_State* L,
 		const char* functionName,
 		std::string& error,
 		std::tuple<RetTypes...>& rets,
@@ -327,7 +326,7 @@ bool CallLuaGlobalFunction(lua_State* L,
 {
 	lua_getglobal(L, functionName);
 
-	return CallLuaFunction(L, error, rets, args...);
+	return CallLuaFunctionParamRet(L, error, rets, args...);
 }
 
 /**
@@ -340,13 +339,13 @@ bool CallLuaGlobalFunction(lua_State* L,
  * @return
  */
 template<typename ...ArgTypes>
-bool CallLuaGlobalFunction(lua_State* L,
+bool CallLuaGlobalFunctionParamNoRet(lua_State* L,
 		const char* functionName,
 		std::string& error,
 		ArgTypes...args) noexcept
 {
 	lua_getglobal(L, functionName);
-	return CallLuaFunction(L, error, args...);
+	return CallLuaFunctionParamNoRet(L, error, args...);
 }
 
 /**
@@ -359,13 +358,13 @@ bool CallLuaGlobalFunction(lua_State* L,
  * @return
  */
 template<typename ...RetTypes>
-bool CallLuaGlobalFunction(lua_State* L,
+bool CallLuaGlobalFunctionNoParamRet(lua_State* L,
 		const char* functionName,
 		std::string& error,
 		std::tuple<RetTypes...>& rets) noexcept
 {
 	lua_getglobal(L, functionName);
-	return CallLuaFunction(L, error, rets);
+	return CallLuaFunctionNoParamRet(L, error, rets);
 }
 
 /**
@@ -375,7 +374,7 @@ bool CallLuaGlobalFunction(lua_State* L,
  * @param error
  * @return
  */
-bool CallLuaGlobalFunction(lua_State* L,
+bool CallLuaGlobalFunctionNoParamNoRet(lua_State* L,
 		const char* functionName,
 		std::string& error) noexcept;
 

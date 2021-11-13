@@ -11,6 +11,8 @@
 #include <string>
 #include <stdexcept>
 
+#define GET_NAME(t) #t
+
 #define MAX_OBJECT_META_NAME_LEN 125
 
 class LuaException : public std::runtime_error
@@ -29,10 +31,35 @@ void PushNativesInternal(lua_State* L,
 }
 
 template<typename T>
-void PushObject(lua_State* L,
-		T* obj) noexcept
+struct RemoveAllPointer
 {
-	static_assert(std::is_pointer<T>::value, "T is not pointer type");
+		using type = T;
+};
+
+template<typename T>
+struct RemoveAllPointer<T*>
+{
+	using type = T;
+};
+
+template<typename T>
+struct RemoveAllPointer<T**>
+{
+	using type = T;
+};
+
+template<typename T>
+struct RemoveAllPointer<T***>
+{
+	using type = T;
+};
+
+template<typename T>
+void PushObject(lua_State* L,
+		T obj) noexcept
+{
+	static_assert(std::is_pointer<T>::value, "T is not a pointer type");
+//	static_assert(std::is_pointer<std::remove_pointer<T>::type>::value, "T is not a pointer of pointer type");
 
 	if(obj == nullptr)
 	{
@@ -40,7 +67,7 @@ void PushObject(lua_State* L,
 		return;
 	}
 
-	using Type = std::remove_pointer<T>::type;
+	using Type = std::remove_cv<RemoveAllPointer<T>::type>::type;
 	char metaName[MAX_OBJECT_META_NAME_LEN];
 	int len = snprintf(metaName, MAX_OBJECT_META_NAME_LEN, "%s_Meta", typeid(Type).name());
 	if ( len < 0 || len > MAX_OBJECT_META_NAME_LEN )
@@ -94,8 +121,7 @@ template<typename T>
 void PushNativeInternal(lua_State* L,
 		T any) noexcept
 {
-	static_assert(std::is_pointer<T>::value, "T is not a pointer type");
-	PushObject<T>(L, &any);
+	PushObject<T>(L, any);
 }
 
 template<>

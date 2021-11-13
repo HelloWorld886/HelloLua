@@ -12,5 +12,4 @@ test:Print("")
 
 function Main(test)
     test:Print("")
-    return 20, "ss"
 end

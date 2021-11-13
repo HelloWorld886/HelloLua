@@ -7,7 +7,7 @@
 option("test")
     set_default(true)
     set_showmenu("true")
-    set_description("Tbuild test")
+    set_description("build test")
 option_end()
 
 option("lua")
