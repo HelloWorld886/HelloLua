@@ -241,7 +241,7 @@ template<typename ...ArgTypes, typename ...RetTypes>
 bool CallLuaFunction(lua_State* L,
 		std::string& error,
 		std::tuple<RetTypes...>& rets,
-		ArgTypes...args)
+		ArgTypes...args) noexcept
 {
 	int top = lua_gettop(L);
 
@@ -267,7 +267,7 @@ bool CallLuaFunction(lua_State* L,
 template<typename ...ArgTypes>
 bool CallLuaFunction(lua_State* L,
 		std::string& error,
-		ArgTypes...args)
+		ArgTypes...args) noexcept
 {
 	std::tuple<ArgTypes...> argsTuple{ args... };
 	PushNatives(L, argsTuple);
@@ -285,7 +285,7 @@ bool CallLuaFunction(lua_State* L,
 template<typename ...RetTypes>
 bool CallLuaFunction(lua_State* L,
 		std::string& error,
-		std::tuple<RetTypes...>& rets)
+		std::tuple<RetTypes...>& rets) noexcept
 {
 	int top = lua_gettop(L);
 
@@ -305,7 +305,7 @@ bool CallLuaFunction(lua_State* L,
  * @return
  */
 bool CallLuaFunction(lua_State* L,
-		std::string& error);
+		std::string& error) noexcept;
 
 /**
  * 调用lua全局方法, 有参数有返回值
@@ -323,7 +323,7 @@ bool CallLuaGlobalFunction(lua_State* L,
 		const char* functionName,
 		std::string& error,
 		std::tuple<RetTypes...>& rets,
-		ArgTypes...args)
+		ArgTypes...args) noexcept
 {
 	lua_getglobal(L, functionName);
 
@@ -343,7 +343,7 @@ template<typename ...ArgTypes>
 bool CallLuaGlobalFunction(lua_State* L,
 		const char* functionName,
 		std::string& error,
-		ArgTypes...args)
+		ArgTypes...args) noexcept
 {
 	lua_getglobal(L, functionName);
 	return CallLuaFunction(L, error, args...);
@@ -362,7 +362,7 @@ template<typename ...RetTypes>
 bool CallLuaGlobalFunction(lua_State* L,
 		const char* functionName,
 		std::string& error,
-		std::tuple<RetTypes...>& rets)
+		std::tuple<RetTypes...>& rets) noexcept
 {
 	lua_getglobal(L, functionName);
 	return CallLuaFunction(L, error, rets);
@@ -377,6 +377,6 @@ bool CallLuaGlobalFunction(lua_State* L,
  */
 bool CallLuaGlobalFunction(lua_State* L,
 		const char* functionName,
-		std::string& error);
+		std::string& error) noexcept;
 
 #endif

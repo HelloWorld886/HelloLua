@@ -30,22 +30,32 @@ void PushNativesInternal(lua_State* L,
 
 template<typename T>
 void PushObject(lua_State* L,
-		T* obj)
+		T* obj) noexcept
 {
 	static_assert(std::is_pointer<T>::value, "T is not pointer type");
 
 	if(obj == nullptr)
-		throw LuaException("obj is null");
+	{
+		lua_pushnil(L);
+		return;
+	}
 
 	using Type = std::remove_pointer<T>::type;
 	char metaName[MAX_OBJECT_META_NAME_LEN];
 	int len = snprintf(metaName, MAX_OBJECT_META_NAME_LEN, "%s_Meta", typeid(Type).name());
 	if ( len < 0 || len > MAX_OBJECT_META_NAME_LEN )
-		throw LuaException("get meta name exception");
+	{
+		lua_pushnil(L);
+		return;
+	}
 
 	lua_pushlightuserdata(L, obj);
 	if(lua_getfield(L, LUA_REGISTRYINDEX, metaName) == LUA_TNIL)
-		throw LuaException("can't get metatable");
+	{
+		lua_pop(L, 1);
+		return;
+	}
+
 	lua_setmetatable(L, -2);
 }
 
@@ -250,6 +260,6 @@ RetType HelpCallFunctionInternal(
 bool CallLuaFunctionInternal(lua_State* L,
 		int argCount,
 		int retCount,
-		std::string& error);
+		std::string& error) noexcept;
 
 #endif

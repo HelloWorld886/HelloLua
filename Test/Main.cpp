@@ -8,6 +8,7 @@
 class Test
 {
 public:
+	using state = lua_State;
 	Test(int a, bool s) : _field(a)
 	{
 	};
@@ -28,6 +29,13 @@ public:
 
 public:
 	int _field;
+	std::tuple<const char*, int(*)(lua_State*), int> t[1] = {
+			{"", [](lua_State* L){
+				return 1;
+			}, 1}
+	};
+
+	constexpr static  int a = 1;
 };
 
 int Test::SField = 1;
@@ -94,24 +102,25 @@ int main(int argc, char** argv)
 
 	lua_pushstring(L, "ss");
 
-//	test->Print("");
-//	std::tuple<int,const char*> rets;
-//	std::string error;
-//	try
-//	{
-//		if (!CallLuaGlobalFunction(L, "Main", error,rets, test))
-//		{
-//			std::cout << error;
-//		}
-//		else
-//		{
-//			std::cout << std::get<0>(rets);
-//			std::cout << std::get<1>(rets);
-//		}
-//	}
-//	catch (LuaException& e){
-//		std::cout << e.what();
-//	}
+	Test* test = new Test(10, false);
+	test->Print("");
+	std::tuple<int,const char*> rets;
+	std::string error;
+	try
+	{
+		if (!CallLuaGlobalFunction(L, "Main", error,rets, test))
+		{
+			std::cout << error;
+		}
+		else
+		{
+			std::cout << std::get<0>(rets);
+			std::cout << std::get<1>(rets);
+		}
+	}
+	catch (LuaException& e){
+		std::cout << e.what();
+	}
 
 	delete test;
 	lua_close(L);
