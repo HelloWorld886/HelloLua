@@ -8,7 +8,6 @@
 class Test
 {
 public:
-	using state = lua_State;
 	Test(int a, bool s) : _field(a)
 	{
 	};
@@ -114,11 +113,7 @@ int main(int argc, char** argv)
 
 	Test* test = new Test(10, false);
 
-	std::string error;
-	if (!CallLuaGlobalFunctionParamNoRet(L, "Main", error, &test))
-	{
-		std::cout << error;
-	}
+	CallLuaGlobalFunctionParamNoRet(L, "Main", &test);
 
 	delete test;
 	lua_close(L);

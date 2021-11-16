@@ -133,38 +133,32 @@ lua_CFunction ToNativeInternal(lua_State* L,
 	return lua_tocfunction(L, idx);
 }
 
-bool CallLuaFunctionInternal(lua_State* L,
+void CallLuaFunctionInternal(lua_State* L,
 		int argCount,
-		int retCount,
-		std::string& error) noexcept
+		int retCount)
 {
 	int funcIdx = lua_gettop(L) - argCount;
 	if (funcIdx < 1 || !lua_isfunction(L, funcIdx))
 	{
-		error = "can't find a function";
-		return false;
+		throw LuaException("can't find a function");
 	}
 
 	if(lua_pcall(L, argCount, retCount, 0) != 0)
 	{
-		error = lua_tostring(L, -1);
+		const char* error = lua_tostring(L, -1);
 		lua_pop(L, 1);
-		return false;
+		throw LuaException(error);
 	}
-
-	return true;
 }
 
-bool CallLuaFunctionNoParamNoRet(lua_State* L,
-		std::string& error) noexcept
+void CallLuaFunctionNoParamNoRet(lua_State* L)
 {
-	return CallLuaFunctionInternal(L, 0, 0, error);
+	CallLuaFunctionInternal(L, 0, 0);
 }
 
-bool CallLuaGlobalFunctionNoParamNoRet(lua_State* L,
-		const char* functionName,
-		std::string& error) noexcept
+void CallLuaGlobalFunctionNoParamNoRet(lua_State* L,
+		const char* functionName)
 {
 	lua_getglobal(L, functionName);
-	return CallLuaFunctionNoParamNoRet(L, error);
+	CallLuaFunctionNoParamNoRet(L);
 }

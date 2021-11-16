@@ -42,7 +42,7 @@ void PushNative(lua_State* L,
  */
 template<typename... Args>
 void PushNatives(lua_State* L,
-		std::tuple<Args...>& tuple) noexcept
+		const std::tuple<Args...>& tuple) noexcept
 {
 	PushNativesInternal(L, tuple, std::make_index_sequence<sizeof...(Args)>{});
 }
@@ -208,7 +208,7 @@ int HelpCallObjectFunction(lua_State* L,
  */
 template<typename RetType, typename... ArgTypes>
 int HelpCallFunction(lua_State* L,
-		std::function<RetType(ArgTypes...)> function)
+		RetType(* function)(ArgTypes...))
 {
 	if (lua_gettop(L) < sizeof...(ArgTypes))
 		throw LuaException("no enough params to call function");
@@ -237,22 +237,18 @@ int HelpCallFunction(lua_State* L,
  * @return
  */
 template<typename ...ArgTypes, typename ...RetTypes>
-bool CallLuaFunctionParamRet(lua_State* L,
-		std::string& error,
+void CallLuaFunctionParamRet(lua_State* L,
 		std::tuple<RetTypes...>& rets,
-		ArgTypes...args) noexcept
+		ArgTypes...args)
 {
 	int top = lua_gettop(L);
 
 	std::tuple<ArgTypes...> argsTuple{ args... };
 	PushNatives(L, argsTuple);
-	if (!CallLuaFunctionInternal(L, sizeof...(ArgTypes), sizeof...(RetTypes), error))
-		return false;
+	CallLuaFunctionInternal(L, sizeof...(ArgTypes), sizeof...(RetTypes));
 
 	ToNatives(L, rets, top);
 	lua_pop(L, (int)sizeof...(RetTypes));
-
-	return true;
 }
 
 /**
@@ -264,13 +260,12 @@ bool CallLuaFunctionParamRet(lua_State* L,
  * @return
  */
 template<typename ...ArgTypes>
-bool CallLuaFunctionParamNoRet(lua_State* L,
-		std::string& error,
-		ArgTypes...args) noexcept
+void CallLuaFunctionParamNoRet(lua_State* L,
+		ArgTypes...args)
 {
 	std::tuple<ArgTypes...> argsTuple{ args... };
 	PushNatives(L, argsTuple);
-	return CallLuaFunctionInternal(L, sizeof...(ArgTypes), 0, error);
+	CallLuaFunctionInternal(L, sizeof...(ArgTypes), 0);
 }
 
 /**
@@ -282,19 +277,16 @@ bool CallLuaFunctionParamNoRet(lua_State* L,
  * @return
  */
 template<typename ...RetTypes>
-bool CallLuaFunctionNoParamRet(lua_State* L,
-		std::string& error,
-		std::tuple<RetTypes...>& rets) noexcept
+void CallLuaFunctionNoParamRet(lua_State* L,
+		std::tuple<RetTypes...>& rets)
 {
 	int top = lua_gettop(L);
 
-	if (!CallLuaFunctionInternal(L, 0, sizeof...(RetTypes), error))
-		return false;
+	CallLuaFunctionInternal(L, 0, sizeof...(RetTypes));
 
 	ToNatives(L, rets, top);
 	lua_pop(L, sizeof...(RetTypes));
 
-	return true;
 }
 
 /**
@@ -303,8 +295,7 @@ bool CallLuaFunctionNoParamRet(lua_State* L,
  * @param error
  * @return
  */
-bool CallLuaFunctionNoParamNoRet(lua_State* L,
-		std::string& error) noexcept;
+void CallLuaFunctionNoParamNoRet(lua_State* L);
 
 /**
  * 调用lua全局方法, 有参数有返回值
@@ -318,15 +309,14 @@ bool CallLuaFunctionNoParamNoRet(lua_State* L,
  * @return
  */
 template<typename ...ArgTypes, typename ...RetTypes>
-bool CallLuaGlobalFunctionParamRet(lua_State* L,
+void CallLuaGlobalFunctionParamRet(lua_State* L,
 		const char* functionName,
-		std::string& error,
 		std::tuple<RetTypes...>& rets,
-		ArgTypes...args) noexcept
+		ArgTypes...args)
 {
 	lua_getglobal(L, functionName);
 
-	return CallLuaFunctionParamRet(L, error, rets, args...);
+	CallLuaFunctionParamRet(L, rets, args...);
 }
 
 /**
@@ -339,13 +329,12 @@ bool CallLuaGlobalFunctionParamRet(lua_State* L,
  * @return
  */
 template<typename ...ArgTypes>
-bool CallLuaGlobalFunctionParamNoRet(lua_State* L,
+void CallLuaGlobalFunctionParamNoRet(lua_State* L,
 		const char* functionName,
-		std::string& error,
-		ArgTypes...args) noexcept
+		ArgTypes...args)
 {
 	lua_getglobal(L, functionName);
-	return CallLuaFunctionParamNoRet(L, error, args...);
+	CallLuaFunctionParamNoRet(L, args...);
 }
 
 /**
@@ -358,13 +347,12 @@ bool CallLuaGlobalFunctionParamNoRet(lua_State* L,
  * @return
  */
 template<typename ...RetTypes>
-bool CallLuaGlobalFunctionNoParamRet(lua_State* L,
+void CallLuaGlobalFunctionNoParamRet(lua_State* L,
 		const char* functionName,
-		std::string& error,
-		std::tuple<RetTypes...>& rets) noexcept
+		std::tuple<RetTypes...>& rets)
 {
 	lua_getglobal(L, functionName);
-	return CallLuaFunctionNoParamRet(L, error, rets);
+	CallLuaFunctionNoParamRet(L, rets);
 }
 
 /**
@@ -374,8 +362,7 @@ bool CallLuaGlobalFunctionNoParamRet(lua_State* L,
  * @param error
  * @return
  */
-bool CallLuaGlobalFunctionNoParamNoRet(lua_State* L,
-		const char* functionName,
-		std::string& error) noexcept;
+void CallLuaGlobalFunctionNoParamNoRet(lua_State* L,
+		const char* functionName);
 
 #endif

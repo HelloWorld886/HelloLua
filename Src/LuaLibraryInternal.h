@@ -24,7 +24,7 @@ public:
 
 template<typename... Args, size_t... Integers>
 void PushNativesInternal(lua_State* L,
-		std::tuple<Args...>& tuple,
+		const std::tuple<Args...>& tuple,
 		std::index_sequence<Integers...>&&) noexcept
 {
 	std::initializer_list<int>{ (PushNativeInternal<Args>(L, std::get<Integers>(tuple)), 0)... };
@@ -276,16 +276,15 @@ RetType HelpCallObjectFunctionInternal(T* pointer,
 
 template<typename RetType, typename... ArgTypes, size_t... Integers>
 RetType HelpCallFunctionInternal(
-		std::function<RetType(ArgTypes...)> function,
+		RetType(* function)(ArgTypes...),
 		std::tuple<ArgTypes...>& tuple,
 		std::index_sequence<Integers...>&&)
 {
 	return function(std::get<Integers>(tuple)...);
 }
 
-bool CallLuaFunctionInternal(lua_State* L,
+void CallLuaFunctionInternal(lua_State* L,
 		int argCount,
-		int retCount,
-		std::string& error) noexcept;
+		int retCount);
 
 #endif
