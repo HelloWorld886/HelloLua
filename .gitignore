@@ -12,3 +12,5 @@ _deps
 build
 .xmake
 .vscode
+CMakeLists.txt
+CMakeLists.txt

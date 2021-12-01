@@ -203,6 +203,37 @@ int HelpCallObjectFunction(lua_State* L,
  * @tparam T
  * @tparam RetType
  * @tparam ArgTypes
+ * @param pointer
+ * @param func
+ * @param tuple
+ */
+template<typename T, typename RetType, typename... ArgTypes>
+int HelpCallObjectFunction(lua_State* L,
+		RetType(T::*func)(ArgTypes...) const)
+{
+	if (lua_gettop(L) < sizeof...(ArgTypes) + 1)
+		throw LuaException("no enough params to call function");
+
+	T** userData = ToNative<T**>(L, 1);
+
+	std::tuple<ArgTypes...> tuple;
+	ToNatives(L, tuple, 2);
+
+	if (!std::is_void<RetType>::value)
+	{
+		PushNative(L, HelpCallObjectFunctionInternal(*userData, func,
+				tuple, std::make_index_sequence<sizeof...(ArgTypes)>{}));
+		return 1;
+	}
+
+	return 0;
+}
+
+/**
+ * 调用userdata的函数，用于lua类包装方法中
+ * @tparam T
+ * @tparam RetType
+ * @tparam ArgTypes
  * @param L
  * @param func
  */

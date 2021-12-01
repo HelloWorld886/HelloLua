@@ -20,6 +20,11 @@ public:
 		return 1;
 	}
 
+	int GetField() const
+	{
+		return _field;
+	}
+
 	static int SPrint(const char* msg, const char* tips)
 	{
 		std::cout << "Static Method:" << msg << tips << std::endl;
@@ -50,6 +55,7 @@ BEGIN_DECLARE_LUA_WRAPPER(Test, 1, 1, 1, 1)
 DECLARE_CONSTRUCTOR(int, bool)
 DECLARE_DESTRUCTOR(Destroy)
 BEGIN_DECLARE_MEMBER()
+DECLARE_METHOD(GetField, int)
 DECLARE_STATIC_METHOD(SPrint, int, const char*, const char*)
 DECLARE_STATIC_FIELD(SField)
 DECLARE_METHOD(Print, int, const char*)
