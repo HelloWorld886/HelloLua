@@ -34,7 +34,14 @@ void PushNativeInternal(lua_State* L,
 
 template<>
 void PushNativeInternal(lua_State* L,
-		std::string& any) noexcept
+	long any) noexcept
+{
+	lua_pushinteger(L, (lua_Integer)any);
+}
+
+template<>
+void PushNativeInternal(lua_State* L,
+		std::string any) noexcept
 {
 	lua_pushstring(L, any.c_str());
 }
@@ -86,6 +93,15 @@ int ToNativeInternal(lua_State* L,
 	if(lua_type(L, idx) != LUA_TNUMBER)
 		throw LuaException("can't cast to integer");
 	return (int)lua_tointeger(L, idx);
+}
+
+template<>
+long ToNativeInternal(lua_State* L,
+	int idx)
+{
+	if (lua_type(L, idx) != LUA_TNUMBER)
+		throw LuaException("can't cast to integer");
+	return (long)lua_tointeger(L, idx);
 }
 
 template<>

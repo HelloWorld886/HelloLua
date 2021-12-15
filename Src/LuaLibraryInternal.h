@@ -134,7 +134,11 @@ void PushNativeInternal(lua_State* L,
 
 template<>
 void PushNativeInternal(lua_State* L,
-		std::string& any) noexcept;
+	long any) noexcept;
+
+template<>
+void PushNativeInternal(lua_State* L,
+		std::string any) noexcept;
 
 template<>
 void PushNativeInternal(lua_State* L,
@@ -225,6 +229,10 @@ bool ToNativeInternal(lua_State* L,
 template<>
 int ToNativeInternal(lua_State* L,
 		int idx);
+
+template<>
+long ToNativeInternal(lua_State* L,
+	int idx);
 
 template<>
 std::string ToNativeInternal(lua_State* L,

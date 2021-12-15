@@ -269,7 +269,7 @@
         return 1;                                                \
     }
 
-#define DECLARE_EMPTY_CONSTRUCTOR(...)    \
+#define DECLARE_EMPTY_CONSTRUCTOR()    \
     static int CreateObject(lua_State *L) \
     {                                     \
         return 0;                         \
@@ -292,7 +292,7 @@
         return 1;                                 \
     }
 
-#define DECLARE_EMPTY_DESTRUCTOR(Destructor) \
+#define DECLARE_EMPTY_DESTRUCTOR()           \
     static int DestroyObject(lua_State *L)   \
     {                                        \
         return 0;                            \
