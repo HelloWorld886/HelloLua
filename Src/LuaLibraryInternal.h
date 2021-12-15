@@ -274,6 +274,15 @@ RetType HelpCallObjectFunctionInternal(T* pointer,
 	return (pointer->*func)(std::get<Integers>(tuple)...);
 }
 
+template<typename T, typename RetType, typename... ArgTypes, size_t... Integers>
+RetType HelpCallObjectFunctionInternal(T* pointer,
+	RetType(T::* func)(ArgTypes...) const,
+	std::tuple<ArgTypes...>& tuple,
+	std::index_sequence<Integers...>&&)
+{
+	return (pointer->*func)(std::get<Integers>(tuple)...);
+}
+
 template<typename RetType, typename... ArgTypes, size_t... Integers>
 RetType HelpCallFunctionInternal(
 		RetType(* function)(ArgTypes...),

@@ -188,13 +188,15 @@ int HelpCallObjectFunction(lua_State* L,
 	std::tuple<ArgTypes...> tuple;
 	ToNatives(L, tuple, 2);
 
-	if (!std::is_void<RetType>::value)
+	if constexpr (!std::is_void<RetType>::value)
 	{
 		PushNative(L, HelpCallObjectFunctionInternal(*userData, func,
 				tuple, std::make_index_sequence<sizeof...(ArgTypes)>{}));
 		return 1;
 	}
 
+	HelpCallObjectFunctionInternal(*userData, func,
+		tuple, std::make_index_sequence<sizeof...(ArgTypes)>{});
 	return 0;
 }
 
@@ -219,13 +221,15 @@ int HelpCallObjectFunction(lua_State* L,
 	std::tuple<ArgTypes...> tuple;
 	ToNatives(L, tuple, 2);
 
-	if (!std::is_void<RetType>::value)
+	if constexpr (!std::is_void<RetType>::value)
 	{
 		PushNative(L, HelpCallObjectFunctionInternal(*userData, func,
 				tuple, std::make_index_sequence<sizeof...(ArgTypes)>{}));
 		return 1;
 	}
 
+	HelpCallObjectFunctionInternal(*userData, func,
+		tuple, std::make_index_sequence<sizeof...(ArgTypes)>{});
 	return 0;
 }
 
@@ -247,13 +251,15 @@ int HelpCallFunction(lua_State* L,
 	std::tuple<ArgTypes...> tuple;
 	ToNatives(L, tuple);
 
-	if (!std::is_void<RetType>::value)
+	if constexpr (!std::is_void<RetType>::value)
 	{
 		PushNative(L, HelpCallFunctionInternal(function,
 				tuple, std::make_index_sequence<sizeof...(ArgTypes)>{}));
 		return 1;
 	}
 
+	HelpCallFunctionInternal(function,
+		tuple, std::make_index_sequence<sizeof...(ArgTypes)>{});
 	return 0;
 }
 

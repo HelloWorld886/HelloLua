@@ -25,6 +25,12 @@ public:
 		return _field;
 	}
 
+	void Method()
+	{
+		std::cout << "Methid1";
+		_field = 20;
+	}
+
 	static int SPrint(const char* msg, const char* tips)
 	{
 		std::cout << "Static Method:" << msg << tips << std::endl;
@@ -56,6 +62,7 @@ DECLARE_CONSTRUCTOR(int, bool)
 DECLARE_DESTRUCTOR(Destroy)
 BEGIN_DECLARE_MEMBER()
 DECLARE_METHOD(GetField, int)
+DECLARE_METHOD(Method, void)
 DECLARE_STATIC_METHOD(SPrint, int, const char*, const char*)
 DECLARE_STATIC_FIELD(SField)
 DECLARE_METHOD(Print, int, const char*)
@@ -115,13 +122,13 @@ int main(int argc, char** argv)
 		std::cout << lua_tostring(L, -1);
 	}
 
-	lua_pushstring(L, "ss");
+	//lua_pushstring(L, "ss");
 
-	Test* test = new Test(10, false);
+	//Test* test = new Test(10, false);
 
-	CallLuaGlobalFunctionParamNoRet(L, "Main", &test);
+	//CallLuaGlobalFunctionParamNoRet(L, "Main", &test);
 
-	delete test;
+	//delete test;
 	lua_close(L);
 
 	return 0;

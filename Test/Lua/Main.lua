@@ -4,11 +4,13 @@
 --- DateTime: 2021/10/26 16:08
 ---
 
-Test.SPrint("test", "tips")
-Test.SField = 2
-print(Test.SField)
+--Test.SPrint("test", "tips")
+--Test.SField = 2
+--print(Test.SField)
 local test = Test.New(2, false)
-test:Print("")
+--test:Print("")
+test:Method()
+print("GetField" .. test:GetField())
 
 function Main(test)
     test:Print("")
