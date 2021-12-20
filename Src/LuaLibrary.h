@@ -183,13 +183,31 @@ std::enable_if_t<!std::is_void_v<RetType>, int> HelpCallObjectFunction(lua_State
 	if (lua_gettop(L) < sizeof...(ArgTypes) + 1)
 		throw LuaException("no enough params to call function");
 
-	T** userData = ToNative<T**>(L, 1);
+	if (lua_type(L, 1) == LUA_TTABLE)
+	{
+		lua_pushstring(L, "__pointer");
+		lua_rawget(L, 1);
 
-	std::tuple<ArgTypes...> tuple;
-	ToNatives(L, tuple, 2);
+		T** userData = ToNative<T**>(L, -1);
+		lua_pop(L, 1);
 
-	PushNative(L, HelpCallObjectFunctionInternal(*userData, func,
-		tuple, std::make_index_sequence<sizeof...(ArgTypes)>{}));
+		std::tuple<ArgTypes...> tuple;
+		ToNatives(L, tuple, 2);
+
+		PushNative(L, HelpCallObjectFunctionInternal(*userData, func,
+			tuple, std::make_index_sequence<sizeof...(ArgTypes)>{}));
+	}
+	else 
+	{
+		T** userData = ToNative<T**>(L, 1);
+
+		std::tuple<ArgTypes...> tuple;
+		ToNatives(L, tuple, 2);
+
+		PushNative(L, HelpCallObjectFunctionInternal(*userData, func,
+			tuple, std::make_index_sequence<sizeof...(ArgTypes)>{}));
+	}
+
 	return 1;
 }
 
@@ -200,13 +218,31 @@ std::enable_if_t<std::is_void_v<RetType>, int> HelpCallObjectFunction(lua_State*
 	if (lua_gettop(L) < sizeof...(ArgTypes) + 1)
 		throw LuaException("no enough params to call function");
 
-	T** userData = ToNative<T**>(L, 1);
+	if (lua_type(L, 1) == LUA_TTABLE)
+	{
+		lua_pushstring(L, "__pointer");
+		lua_rawget(L, 1);
 
-	std::tuple<ArgTypes...> tuple;
-	ToNatives(L, tuple, 2);
+		T** userData = ToNative<T**>(L, -1);
+		lua_pop(L, 1);
 
-	HelpCallObjectFunctionInternal(*userData, func,
-		tuple, std::make_index_sequence<sizeof...(ArgTypes)>{});
+		std::tuple<ArgTypes...> tuple;
+		ToNatives(L, tuple, 2);
+
+		HelpCallObjectFunctionInternal(*userData, func,
+			tuple, std::make_index_sequence<sizeof...(ArgTypes)>{});
+	}
+	else
+	{
+		T** userData = ToNative<T**>(L, 1);
+
+		std::tuple<ArgTypes...> tuple;
+		ToNatives(L, tuple, 2);
+
+		HelpCallObjectFunctionInternal(*userData, func,
+			tuple, std::make_index_sequence<sizeof...(ArgTypes)>{});
+	}
+
 	return 0;
 }
 
@@ -226,13 +262,31 @@ std::enable_if_t<!std::is_void_v<RetType>, int> HelpCallObjectFunction(lua_State
 	if (lua_gettop(L) < sizeof...(ArgTypes) + 1)
 		throw LuaException("no enough params to call function");
 
-	T** userData = ToNative<T**>(L, 1);
+	if (lua_type(L, 1) == LUA_TTABLE)
+	{
+		lua_pushstring(L, "__pointer");
+		lua_rawget(L, 1);
 
-	std::tuple<ArgTypes...> tuple;
-	ToNatives(L, tuple, 2);
+		T** userData = ToNative<T**>(L, -1);
+		lua_pop(L, 1);
 
-	PushNative(L, HelpCallObjectFunctionInternal(*userData, func,
-		tuple, std::make_index_sequence<sizeof...(ArgTypes)>{}));
+		std::tuple<ArgTypes...> tuple;
+		ToNatives(L, tuple, 2);
+
+		PushNative(L, HelpCallObjectFunctionInternal(*userData, func,
+			tuple, std::make_index_sequence<sizeof...(ArgTypes)>{}));
+	}
+	else
+	{
+		T** userData = ToNative<T**>(L, 1);
+
+		std::tuple<ArgTypes...> tuple;
+		ToNatives(L, tuple, 2);
+
+		PushNative(L, HelpCallObjectFunctionInternal(*userData, func,
+			tuple, std::make_index_sequence<sizeof...(ArgTypes)>{}));
+	}
+
 	return 1;
 }
 
@@ -240,17 +294,30 @@ template<typename T, typename RetType, typename... ArgTypes>
 std::enable_if_t<std::is_void_v<RetType>, int> HelpCallObjectFunction(lua_State* L,
 	RetType(T::* func)(ArgTypes...) const)
 {
-	if (lua_gettop(L) < sizeof...(ArgTypes) + 1)
-		throw LuaException("no enough params to call function");
+	if (lua_type(L, 1) == LUA_TTABLE)
+	{
+		lua_pushstring(L, "__pointer");
+		lua_rawget(L, 1);
 
-	T** userData = ToNative<T**>(L, 1);
+		T** userData = ToNative<T**>(L, -1);
+		lua_pop(L, 1);
 
-	std::tuple<ArgTypes...> tuple;
-	ToNatives(L, tuple, 2);
+		std::tuple<ArgTypes...> tuple;
+		ToNatives(L, tuple, 2);
 
+		HelpCallObjectFunctionInternal(*userData, func,
+			tuple, std::make_index_sequence<sizeof...(ArgTypes)>{});
+	}
+	else
+	{
+		T** userData = ToNative<T**>(L, 1);
 
-	HelpCallObjectFunctionInternal(*userData, func,
-		tuple, std::make_index_sequence<sizeof...(ArgTypes)>{});
+		std::tuple<ArgTypes...> tuple;
+		ToNatives(L, tuple, 2);
+
+		HelpCallObjectFunctionInternal(*userData, func,
+			tuple, std::make_index_sequence<sizeof...(ArgTypes)>{});
+	}
 	return 0;
 }
 
@@ -286,13 +353,6 @@ std::enable_if_t<std::is_void_v<RetType>, int> HelpCallFunction(lua_State* L,
 
 	std::tuple<ArgTypes...> tuple;
 	ToNatives(L, tuple);
-
-	if constexpr (!std::is_void<RetType>::value)
-	{
-		PushNative(L, HelpCallFunctionInternal(function,
-			tuple, std::make_index_sequence<sizeof...(ArgTypes)>{}));
-		return 1;
-	}
 
 	HelpCallFunctionInternal(function,
 		tuple, std::make_index_sequence<sizeof...(ArgTypes)>{});

@@ -287,6 +287,8 @@
 #define DECLARE_DESTRUCTOR(Destructor)            \
     static int DestroyObject(lua_State *L)        \
     {                                             \
+        if (lua_type(L, 1) != LUA_TUSERDATA)      \
+            return 0;                             \
         T **pointer = (T **)lua_touserdata(L, 1); \
         Destructor(*pointer);                     \
         return 1;                                 \
@@ -301,6 +303,8 @@
 #define DECLARE_DEFAULT_DESTRUCTOR()              \
     static int DestroyObject(lua_State *L)        \
     {                                             \
+        if (lua_type(L, 1) != LUA_TUSERDATA)      \
+            return 0;                             \
         T **pointer = (T **)lua_touserdata(L, 1); \
         delete *pointer;                          \
         return 1;                                 \

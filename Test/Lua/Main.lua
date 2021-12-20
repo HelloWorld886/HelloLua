@@ -7,11 +7,12 @@
 --Test.SPrint("test", "tips")
 --Test.SField = 2
 --print(Test.SField)
-local test = Test.New(2, false)
+--local test = Test.New(2, false)
 --test:Print("")
-test:Method()
-print("GetField" .. test:GetField())
+--test:Method()
+--print("GetField" .. test:GetField())
 
-function Main(test)
+function Main(test, test1)
     test:Print("")
+    test1:Print1();
 end

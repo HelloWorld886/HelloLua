@@ -76,7 +76,10 @@ void PushObject(lua_State* L,
 		return;
 	}
 
+	lua_newtable(L);
+	lua_pushstring(L, "__pointer");
 	lua_pushlightuserdata(L, obj);
+	lua_rawset(L, -3);
 	if(lua_getfield(L, LUA_REGISTRYINDEX, metaName) == LUA_TNIL)
 	{
 		lua_pop(L, 1);
@@ -217,7 +220,7 @@ T ToNativeInternal(lua_State* L,
 	static_assert(std::is_pointer<T>::value, "T is not pointer type");
 
 	int type = lua_type(L, idx);
-	if(type != LUA_TUSERDATA && type != LUA_TLIGHTUSERDATA)
+	if(type == LUA_TUSERDATA && type != LUA_TLIGHTUSERDATA)
 		throw LuaException("can't cast to userdata");
 	return (T)lua_touserdata(L, idx);
 }

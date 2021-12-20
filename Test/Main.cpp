@@ -57,6 +57,15 @@ void Destroy(Test* test)
 	delete test;
 }
 
+class Test1
+{
+public:
+	void Print1() 
+	{
+		std::cout << "Test1" << std::endl;
+	}
+};
+
 BEGIN_DECLARE_LUA_WRAPPER(Test, 1, 1, 1, 1)
 DECLARE_CONSTRUCTOR(int, bool)
 DECLARE_DESTRUCTOR(Destroy)
@@ -67,6 +76,14 @@ DECLARE_STATIC_METHOD(SPrint, int, const char*, const char*)
 DECLARE_STATIC_FIELD(SField)
 DECLARE_METHOD(Print, int, const char*)
 DECLARE_FIELD(_field)
+END_DECLARE_MEMBER()
+END_DECLARE_LUA_WRAPPER()
+
+BEGIN_DECLARE_LUA_WRAPPER(Test1, 0, 0, 1, 0)
+DECLARE_EMPTY_CONSTRUCTOR()
+DECLARE_EMPTY_DESTRUCTOR()
+BEGIN_DECLARE_MEMBER()
+DECLARE_METHOD(Print1, void)
 END_DECLARE_MEMBER()
 END_DECLARE_LUA_WRAPPER()
 
@@ -115,6 +132,7 @@ int main(int argc, char** argv)
 	luaL_openlibs(L);
 
 	REGISTER_CLASS(Test, L);
+	REGISTER_CLASS(Test1, L);
 
 	int ret = luaL_dofile(L, "Lua/Main.lua");
 	if (ret != 0)
@@ -122,13 +140,22 @@ int main(int argc, char** argv)
 		std::cout << lua_tostring(L, -1);
 	}
 
-	//lua_pushstring(L, "ss");
+	lua_pushstring(L, "ss");
 
-	//Test* test = new Test(10, false);
+	Test* test = new Test(10, false);
+	Test1* test1 = new Test1;
 
-	//CallLuaGlobalFunctionParamNoRet(L, "Main", &test);
+	try 
+	{
+		CallLuaGlobalFunctionParamNoRet(L, "Main", &test, &test1);
+	}
+	catch (LuaException& e)
+	{
+		std::cout << e.what() << std::endl;
+	}
 
-	//delete test;
+	delete test1;
+	delete test;
 	lua_close(L);
 
 	return 0;
