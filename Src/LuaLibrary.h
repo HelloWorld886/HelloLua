@@ -180,8 +180,8 @@ template<typename T, typename RetType, typename... ArgTypes>
 std::enable_if_t<!std::is_void_v<RetType>, int> HelpCallObjectFunction(lua_State* L,
 		RetType(T::*func)(ArgTypes...))
 {
-	if (lua_gettop(L) < sizeof...(ArgTypes) + 1)
-		throw LuaException("no enough params to call function");
+	//if (lua_gettop(L) < sizeof...(ArgTypes) + 1)
+	//	throw LuaException("no enough params to call function");
 
 	if (lua_type(L, 1) == LUA_TTABLE)
 	{
@@ -189,6 +189,8 @@ std::enable_if_t<!std::is_void_v<RetType>, int> HelpCallObjectFunction(lua_State
 		lua_rawget(L, 1);
 
 		T** userData = ToNative<T**>(L, -1);
+		if (userData == nullptr)
+			throw LuaException("cant get userData");
 		lua_pop(L, 1);
 
 		std::tuple<ArgTypes...> tuple;
@@ -200,6 +202,8 @@ std::enable_if_t<!std::is_void_v<RetType>, int> HelpCallObjectFunction(lua_State
 	else 
 	{
 		T** userData = ToNative<T**>(L, 1);
+		if (userData == nullptr)
+			throw LuaException("cant get userData");
 
 		std::tuple<ArgTypes...> tuple;
 		ToNatives(L, tuple, 2);
@@ -215,8 +219,8 @@ template<typename T, typename RetType, typename... ArgTypes>
 std::enable_if_t<std::is_void_v<RetType>, int> HelpCallObjectFunction(lua_State* L,
 	RetType(T::* func)(ArgTypes...))
 {
-	if (lua_gettop(L) < sizeof...(ArgTypes) + 1)
-		throw LuaException("no enough params to call function");
+	//if (lua_gettop(L) < sizeof...(ArgTypes) + 1)
+	//	throw LuaException("no enough params to call function");
 
 	if (lua_type(L, 1) == LUA_TTABLE)
 	{
@@ -224,6 +228,8 @@ std::enable_if_t<std::is_void_v<RetType>, int> HelpCallObjectFunction(lua_State*
 		lua_rawget(L, 1);
 
 		T** userData = ToNative<T**>(L, -1);
+		if (userData == nullptr)
+			throw LuaException("cant get userData");
 		lua_pop(L, 1);
 
 		std::tuple<ArgTypes...> tuple;
@@ -235,6 +241,8 @@ std::enable_if_t<std::is_void_v<RetType>, int> HelpCallObjectFunction(lua_State*
 	else
 	{
 		T** userData = ToNative<T**>(L, 1);
+		if (userData == nullptr)
+			throw LuaException("cant get userData");
 
 		std::tuple<ArgTypes...> tuple;
 		ToNatives(L, tuple, 2);
@@ -259,8 +267,8 @@ template<typename T, typename RetType, typename... ArgTypes>
 std::enable_if_t<!std::is_void_v<RetType>, int> HelpCallObjectFunction(lua_State* L,
 		RetType(T::*func)(ArgTypes...) const)
 {
-	if (lua_gettop(L) < sizeof...(ArgTypes) + 1)
-		throw LuaException("no enough params to call function");
+	//if (lua_gettop(L) < sizeof...(ArgTypes) + 1)
+	//	throw LuaException("no enough params to call function");
 
 	if (lua_type(L, 1) == LUA_TTABLE)
 	{
@@ -268,6 +276,8 @@ std::enable_if_t<!std::is_void_v<RetType>, int> HelpCallObjectFunction(lua_State
 		lua_rawget(L, 1);
 
 		T** userData = ToNative<T**>(L, -1);
+		if (userData == nullptr)
+			throw LuaException("cant get userData");
 		lua_pop(L, 1);
 
 		std::tuple<ArgTypes...> tuple;
@@ -279,6 +289,8 @@ std::enable_if_t<!std::is_void_v<RetType>, int> HelpCallObjectFunction(lua_State
 	else
 	{
 		T** userData = ToNative<T**>(L, 1);
+		if (userData == nullptr)
+			throw LuaException("cant get userData");
 
 		std::tuple<ArgTypes...> tuple;
 		ToNatives(L, tuple, 2);
@@ -300,6 +312,8 @@ std::enable_if_t<std::is_void_v<RetType>, int> HelpCallObjectFunction(lua_State*
 		lua_rawget(L, 1);
 
 		T** userData = ToNative<T**>(L, -1);
+		if (userData == nullptr)
+			throw LuaException("cant get userData");
 		lua_pop(L, 1);
 
 		std::tuple<ArgTypes...> tuple;
@@ -311,6 +325,8 @@ std::enable_if_t<std::is_void_v<RetType>, int> HelpCallObjectFunction(lua_State*
 	else
 	{
 		T** userData = ToNative<T**>(L, 1);
+		if (userData == nullptr)
+			throw LuaException("cant get userData");
 
 		std::tuple<ArgTypes...> tuple;
 		ToNatives(L, tuple, 2);
@@ -333,8 +349,8 @@ template<typename RetType, typename... ArgTypes>
 std::enable_if_t<!std::is_void_v<RetType>, int> HelpCallFunction(lua_State* L,
 		RetType(* function)(ArgTypes...))
 {
-	if (lua_gettop(L) < sizeof...(ArgTypes))
-		throw LuaException("no enough params to call function");
+	//if (lua_gettop(L) < sizeof...(ArgTypes))
+	//	throw LuaException("no enough params to call function");
 
 	std::tuple<ArgTypes...> tuple;
 	ToNatives(L, tuple);
@@ -348,8 +364,8 @@ template<typename RetType, typename... ArgTypes>
 std::enable_if_t<std::is_void_v<RetType>, int> HelpCallFunction(lua_State* L,
 	RetType(*function)(ArgTypes...))
 {
-	if (lua_gettop(L) < sizeof...(ArgTypes))
-		throw LuaException("no enough params to call function");
+	//if (lua_gettop(L) < sizeof...(ArgTypes))
+	//	throw LuaException("no enough params to call function");
 
 	std::tuple<ArgTypes...> tuple;
 	ToNatives(L, tuple);

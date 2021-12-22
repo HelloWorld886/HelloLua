@@ -215,47 +215,47 @@ void PushNativeInternal(lua_State* L,
 
 template<typename T>
 T ToNativeInternal(lua_State* L,
-		int idx)
+		int idx) noexcept
 {
 	static_assert(std::is_pointer<T>::value, "T is not pointer type");
 
-	int type = lua_type(L, idx);
-	if(type == LUA_TUSERDATA && type != LUA_TLIGHTUSERDATA)
-		throw LuaException("can't cast to userdata");
-	return (T)lua_touserdata(L, idx);
+	void* result = lua_touserdata(L, idx);
+	if (result == nullptr)
+		return nullptr;
+	return (T)result;
 }
 
 template<>
 bool ToNativeInternal(lua_State* L,
-		int idx);
+		int idx) noexcept;
 
 template<>
 int ToNativeInternal(lua_State* L,
-		int idx);
+		int idx) noexcept;
 
 template<>
 long ToNativeInternal(lua_State* L,
-	int idx);
+	int idx) noexcept;
 
 template<>
 std::string ToNativeInternal(lua_State* L,
-		int idx);
+		int idx) noexcept;
 
 template<>
 double ToNativeInternal(lua_State* L,
-		int idx);
+		int idx) noexcept;
 
 template<>
 float ToNativeInternal(lua_State* L,
-		int idx);
+		int idx) noexcept;
 
 template<>
 const char* ToNativeInternal(lua_State* L,
-		int idx);
+		int idx) noexcept;
 
 template<>
 lua_CFunction ToNativeInternal(lua_State* L,
-		int idx);
+		int idx) noexcept;
 
 template<typename... Args, size_t... Integers>
 void ToNativesInternal(lua_State* L,

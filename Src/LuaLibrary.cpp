@@ -79,73 +79,61 @@ void PushNativeInternal(lua_State* L,
 
 template<>
 bool ToNativeInternal(lua_State* L,
-		int idx)
+		int idx) noexcept
 {
-	if(lua_type(L, idx) != LUA_TBOOLEAN)
-		throw LuaException("can't cast to boolean");
-	return lua_toboolean(L, idx);
+	return lua_toboolean(L, idx) != 0;
 }
 
 template<>
 int ToNativeInternal(lua_State* L,
-		int idx)
+		int idx) noexcept
 {
-	if(lua_type(L, idx) != LUA_TNUMBER)
-		throw LuaException("can't cast to integer");
 	return (int)lua_tointeger(L, idx);
 }
 
 template<>
 long ToNativeInternal(lua_State* L,
-	int idx)
+	int idx) noexcept
 {
-	if (lua_type(L, idx) != LUA_TNUMBER)
-		throw LuaException("can't cast to integer");
 	return (long)lua_tointeger(L, idx);
 }
 
 template<>
 std::string ToNativeInternal(lua_State* L,
-		int idx)
+		int idx) noexcept
 {
-	if(lua_type(L, idx) != LUA_TSTRING)
-		throw LuaException("can't cast to std::string");
-	return std::string(lua_tostring(L, idx));
+	const char* str = lua_tostring(L, idx);
+	if (str == nullptr)
+		return "";
+
+	return str;
 }
 
 template<>
 double ToNativeInternal(lua_State* L,
-		int idx)
+		int idx) noexcept
 {
-	if(lua_type(L, idx) != LUA_TNUMBER)
-		throw LuaException("can't cast to double");
 	return lua_tonumber(L, idx);
 }
 
 template<>
 float ToNativeInternal(lua_State* L,
-		int idx)
+		int idx) noexcept
 {
-	if(lua_type(L, idx) != LUA_TNUMBER)
-		throw LuaException("can't cast to float");
 	return (float)lua_tonumber(L, idx);
 }
 
 template<>
 const char* ToNativeInternal(lua_State* L,
-		int idx)
+		int idx) noexcept
 {
-	if(lua_type(L, idx) != LUA_TSTRING)
-		throw LuaException("can't cast to const char*");
 	return lua_tostring(L, idx);
 }
 
 template<>
 lua_CFunction ToNativeInternal(lua_State* L,
-		int idx)
+		int idx) noexcept
 {
-	if(lua_type(L, idx) != LUA_TFUNCTION)
-		throw LuaException("can't cast to lua_CFunction");
 	return lua_tocfunction(L, idx);
 }
 
