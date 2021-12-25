@@ -190,7 +190,7 @@ std::enable_if_t<!std::is_void_v<RetType>, int> HelpCallObjectFunction(lua_State
 
 		T** userData = ToNative<T**>(L, -1);
 		if (userData == nullptr)
-			throw LuaException("cant get userData");
+			throw LuaException("can't get userData");
 		lua_pop(L, 1);
 
 		std::tuple<ArgTypes...> tuple;
@@ -203,7 +203,7 @@ std::enable_if_t<!std::is_void_v<RetType>, int> HelpCallObjectFunction(lua_State
 	{
 		T** userData = ToNative<T**>(L, 1);
 		if (userData == nullptr)
-			throw LuaException("cant get userData");
+			throw LuaException("can't get userData");
 
 		std::tuple<ArgTypes...> tuple;
 		ToNatives(L, tuple, 2);
@@ -229,7 +229,7 @@ std::enable_if_t<std::is_void_v<RetType>, int> HelpCallObjectFunction(lua_State*
 
 		T** userData = ToNative<T**>(L, -1);
 		if (userData == nullptr)
-			throw LuaException("cant get userData");
+			throw LuaException("can't get userData");
 		lua_pop(L, 1);
 
 		std::tuple<ArgTypes...> tuple;
@@ -242,7 +242,7 @@ std::enable_if_t<std::is_void_v<RetType>, int> HelpCallObjectFunction(lua_State*
 	{
 		T** userData = ToNative<T**>(L, 1);
 		if (userData == nullptr)
-			throw LuaException("cant get userData");
+			throw LuaException("can't get userData");
 
 		std::tuple<ArgTypes...> tuple;
 		ToNatives(L, tuple, 2);
@@ -277,7 +277,7 @@ std::enable_if_t<!std::is_void_v<RetType>, int> HelpCallObjectFunction(lua_State
 
 		T** userData = ToNative<T**>(L, -1);
 		if (userData == nullptr)
-			throw LuaException("cant get userData");
+			throw LuaException("can't get userData");
 		lua_pop(L, 1);
 
 		std::tuple<ArgTypes...> tuple;
@@ -290,7 +290,7 @@ std::enable_if_t<!std::is_void_v<RetType>, int> HelpCallObjectFunction(lua_State
 	{
 		T** userData = ToNative<T**>(L, 1);
 		if (userData == nullptr)
-			throw LuaException("cant get userData");
+			throw LuaException("can't get userData");
 
 		std::tuple<ArgTypes...> tuple;
 		ToNatives(L, tuple, 2);
@@ -313,7 +313,7 @@ std::enable_if_t<std::is_void_v<RetType>, int> HelpCallObjectFunction(lua_State*
 
 		T** userData = ToNative<T**>(L, -1);
 		if (userData == nullptr)
-			throw LuaException("cant get userData");
+			throw LuaException("can't get userData");
 		lua_pop(L, 1);
 
 		std::tuple<ArgTypes...> tuple;
@@ -326,7 +326,7 @@ std::enable_if_t<std::is_void_v<RetType>, int> HelpCallObjectFunction(lua_State*
 	{
 		T** userData = ToNative<T**>(L, 1);
 		if (userData == nullptr)
-			throw LuaException("cant get userData");
+			throw LuaException("can't get userData");
 
 		std::tuple<ArgTypes...> tuple;
 		ToNatives(L, tuple, 2);
