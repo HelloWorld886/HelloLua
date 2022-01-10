@@ -16,14 +16,26 @@ option("lua")
     set_description("lua version")
 option_end()
 
+option("shared")
+    set_default(false)
+    set_showmenu("true")
+    set_description("is shared")
+option_end()
+
 add_rules("mode.debug", "mode.release")
 add_repositories("musmus-repo https://gitee.com/musmus9405/xmake-repo.git")
 luaVersion = get_config("lua") and get_config("lua") or "v5.4.3"
-add_requires("lua " .. luaVersion, {configs = {shared = false}})
+add_requires("lua " .. luaVersion, {configs = {shared = get_config("shared")}})
 
 target("HelloLua")
     set_languages("c99", "cxx14")
-    set_kind("static")
+    if get_config("shared") then
+        set_kind("shared")
+        add_defines("HELLOLUA_SHARED")
+    else
+        set_kind("static")
+    end
+    add_defines("HELLOUA_INTERNAL")
     add_packages("lua", { public = true })
     add_includedirs("Src", { public = true })
     add_files("Src/*.cpp")

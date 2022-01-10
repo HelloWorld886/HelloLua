@@ -137,7 +137,8 @@ int main(int argc, char** argv)
 	int ret = luaL_dofile(L, "Lua/Main.lua");
 	if (ret != 0)
 	{
-		std::cout << lua_tostring(L, -1);
+		std::cout << lua_tostring(L, -1) << std::endl;
+		return -1;
 	}
 
 	lua_pushstring(L, "ss");

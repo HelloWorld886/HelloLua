@@ -8,6 +8,7 @@
 #include "lua.hpp"
 #include "LuaLibraryInternal.h"
 
+
 /**
  * 创建全局表
  * @param L
@@ -16,7 +17,7 @@
  * @param nrec
  * @return
  */
-int CreateGlobalTable(lua_State* L,
+HELLOLUA_EXPORT int CreateGlobalTable(lua_State* L,
 		const char* name,
 		int narr,
 		int nrec) noexcept;
@@ -444,7 +445,7 @@ void CallLuaFunctionNoParamRet(lua_State* L,
  * @param error
  * @return
  */
-void CallLuaFunctionNoParamNoRet(lua_State* L);
+HELLOLUA_EXPORT void CallLuaFunctionNoParamNoRet(lua_State* L);
 
 /**
  * 调用lua全局方法, 有参数有返回值
@@ -464,6 +465,12 @@ void CallLuaGlobalFunctionParamRet(lua_State* L,
 		ArgTypes...args)
 {
 	lua_getglobal(L, functionName);
+	if (!lua_isfunction(L, -1))
+	{
+		char buffer[128];
+		sprintf(buffer, "can't find function '%s'", functionName);
+		throw LuaException(buffer);
+	}
 
 	CallLuaFunctionParamRet(L, rets, args...);
 }
@@ -483,6 +490,13 @@ void CallLuaGlobalFunctionParamNoRet(lua_State* L,
 		ArgTypes...args)
 {
 	lua_getglobal(L, functionName);
+	if (!lua_isfunction(L, -1))
+	{
+		char buffer[128];
+		sprintf(buffer, "can't find function '%s'", functionName);
+		throw LuaException(buffer);
+	}
+
 	CallLuaFunctionParamNoRet(L, args...);
 }
 
@@ -501,6 +515,13 @@ void CallLuaGlobalFunctionNoParamRet(lua_State* L,
 		std::tuple<RetTypes...>& rets)
 {
 	lua_getglobal(L, functionName);
+	if (!lua_isfunction(L, -1))
+	{
+		char buffer[128];
+		sprintf(buffer, "can't find function '%s'", functionName);
+		throw LuaException(buffer);
+	}
+
 	CallLuaFunctionNoParamRet(L, rets);
 }
 
@@ -511,7 +532,12 @@ void CallLuaGlobalFunctionNoParamRet(lua_State* L,
  * @param error
  * @return
  */
-void CallLuaGlobalFunctionNoParamNoRet(lua_State* L,
+HELLOLUA_EXPORT void CallLuaGlobalFunctionNoParamNoRet(lua_State* L,
 		const char* functionName);
+
+/**
+* 打印堆栈信息
+*/
+HELLOLUA_EXPORT void PrintStackDump(lua_State* L);
 
 #endif

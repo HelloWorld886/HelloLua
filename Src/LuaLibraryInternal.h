@@ -11,11 +11,25 @@
 #include <string>
 #include <stdexcept>
 
+#ifdef HELLOUA_INTERNAL
+#ifdef HELLOLUA_SHARED
+//动态库
+#define HELLOLUA_EXPORT __declspec(dllexport)
+#else
+//静态库
+#define HELLOLUA_EXPORT
+#endif // HELLOLUA_SHARED
+#else
+//外部
+#define HELLOLUA_EXPORT __declspec(dllimport)
+#endif //  HELLUA_INTERNAL
+
+
 #define GET_NAME(t) #t
 
 #define MAX_OBJECT_META_NAME_LEN 125
 
-class LuaException : public std::runtime_error
+class HELLOLUA_EXPORT LuaException : public std::runtime_error
 {
 public:
 	explicit LuaException(const std::string& msg) :
@@ -128,35 +142,35 @@ void PushNativeInternal(lua_State* L,
 }
 
 template<>
-void PushNativeInternal(lua_State* L,
+HELLOLUA_EXPORT void PushNativeInternal(lua_State* L,
 		bool any) noexcept;
 
 template<>
-void PushNativeInternal(lua_State* L,
+HELLOLUA_EXPORT void PushNativeInternal(lua_State* L,
 		int any) noexcept;
 
 template<>
-void PushNativeInternal(lua_State* L,
+HELLOLUA_EXPORT void PushNativeInternal(lua_State* L,
 	long any) noexcept;
 
 template<>
-void PushNativeInternal(lua_State* L,
+HELLOLUA_EXPORT void PushNativeInternal(lua_State* L,
 		std::string any) noexcept;
 
 template<>
-void PushNativeInternal(lua_State* L,
+HELLOLUA_EXPORT void PushNativeInternal(lua_State* L,
 		double any) noexcept;
 
 template<>
-void PushNativeInternal(lua_State* L,
+HELLOLUA_EXPORT void PushNativeInternal(lua_State* L,
 		float any) noexcept;
 
 template<>
-void PushNativeInternal(lua_State* L,
+HELLOLUA_EXPORT void PushNativeInternal(lua_State* L,
 		const char* any) noexcept;
 
 template<>
-void PushNativeInternal(lua_State* L,
+HELLOLUA_EXPORT void PushNativeInternal(lua_State* L,
 		lua_CFunction any) noexcept;
 
 //不使用c++17的if constexpr，改用模板特化
@@ -226,19 +240,19 @@ T ToNativeInternal(lua_State* L,
 }
 
 template<>
-bool ToNativeInternal(lua_State* L,
+HELLOLUA_EXPORT bool ToNativeInternal(lua_State* L,
 		int idx) noexcept;
 
 template<>
-int ToNativeInternal(lua_State* L,
+HELLOLUA_EXPORT int ToNativeInternal(lua_State* L,
 		int idx) noexcept;
 
 template<>
-long ToNativeInternal(lua_State* L,
+HELLOLUA_EXPORT long ToNativeInternal(lua_State* L,
 	int idx) noexcept;
 
 template<>
-std::string ToNativeInternal(lua_State* L,
+HELLOLUA_EXPORT std::string ToNativeInternal(lua_State* L,
 		int idx) noexcept;
 
 template<>
@@ -246,15 +260,15 @@ double ToNativeInternal(lua_State* L,
 		int idx) noexcept;
 
 template<>
-float ToNativeInternal(lua_State* L,
+HELLOLUA_EXPORT float ToNativeInternal(lua_State* L,
 		int idx) noexcept;
 
 template<>
-const char* ToNativeInternal(lua_State* L,
+HELLOLUA_EXPORT const char* ToNativeInternal(lua_State* L,
 		int idx) noexcept;
 
 template<>
-lua_CFunction ToNativeInternal(lua_State* L,
+HELLOLUA_EXPORT lua_CFunction ToNativeInternal(lua_State* L,
 		int idx) noexcept;
 
 template<typename... Args, size_t... Integers>
@@ -303,7 +317,7 @@ RetType HelpCallFunctionInternal(
 	return function(std::get<Integers>(tuple)...);
 }
 
-void CallLuaFunctionInternal(lua_State* L,
+HELLOLUA_EXPORT void CallLuaFunctionInternal(lua_State* L,
 		int argCount,
 		int retCount);
 
